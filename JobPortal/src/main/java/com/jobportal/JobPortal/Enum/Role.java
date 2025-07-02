@@ -1,5 +1,7 @@
 package com.jobportal.JobPortal.Enum;
 
-public class Role {
-    STUDENT,RECRUITER,ADMIN;
+public enum Role {
+
+    STDUENT,RECRUITER,ADMIN
+
 }

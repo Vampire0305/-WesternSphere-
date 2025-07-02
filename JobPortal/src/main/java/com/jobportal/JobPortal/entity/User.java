@@ -1,16 +1,49 @@
 package com.jobportal.JobPortal.entity;
 
+import com.jobportal.JobPortal.Enum.Role;
+
+import javax.persistence.Entity;
+
+
 import javax.persistence.*;
 
-@Entity
-@Table(name="user")
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
 
-    public long getId() {
-        return id;
+
+@Entity
+@Table(name="users")
+
+public class User {
+
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+
+    private Long Id;
+
+    private String name;
+
+    @Column(unique = true)
+    private String email;
+
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    public User() {}
+
+    public User(String name,String email,String password,Role role) {
+        this.name=name;
+        this.email=email;
+        this.password=password;
+        this.role=role;
+    }
+
+    public Long getId() {
+        return Id;
+    }
+
+    public void setId(Long id) {
+        Id = id;
     }
 
     public String getName() {
@@ -37,21 +70,12 @@ public class User {
         this.password = password;
     }
 
-    public Enum getRole() {
-        return Role;
+    public Role getRole() {
+        return role;
     }
 
-    public void setRole(Enum role) {
-        Role = role;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    private String name;
-    @Column(unique=true)
-    private String email;
-    private String password;
-    private Enum Role;
 }
