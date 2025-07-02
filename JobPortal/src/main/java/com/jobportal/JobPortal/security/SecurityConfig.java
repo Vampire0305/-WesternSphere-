@@ -25,7 +25,7 @@ public class SecurityConfig {
 
         http.csrf().disable()
                 .authorizeRequests().
-                antMatchers("/api/auth/**").permitAll()
+                antMatchers("/api/auth/**","/api/students/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement()
@@ -41,4 +41,3 @@ public class SecurityConfig {
     }
 
 }
-
