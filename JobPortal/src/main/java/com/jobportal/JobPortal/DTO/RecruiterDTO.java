@@ -1,11 +1,71 @@
 package com.jobportal.JobPortal.DTO;
 
+import jdk.nashorn.internal.objects.annotations.Getter;
+import jdk.nashorn.internal.objects.annotations.Setter;
+
 public class RecruiterDTO {
 
     public Long id;
     public String name;
     public String email;
     public String phone;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getCompanyDescription() {
+        return companyDescription;
+    }
+
+    public void setCompanyDescription(String companyDescription) {
+        this.companyDescription = companyDescription;
+    }
+
+    public String getCompanyWebsite() {
+        return companyWebsite;
+    }
+
+    public void setCompanyWebsite(String companyWebsite) {
+        this.companyWebsite = companyWebsite;
+    }
+
     public String companyName;
 
     public RecruiterDTO(Long id, String name, String email, String phone, String companyName, String companyDescription, String companyWebsite) {

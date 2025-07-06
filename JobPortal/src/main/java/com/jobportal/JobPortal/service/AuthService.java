@@ -31,7 +31,7 @@ public class AuthService {
         userRepository.save(user);
 
         String token = jwtUtil.generateToken( user.getEmail(),user.getRole().name());
-        return  new AuthResponse(token,"User Registerd Successful");
+        return  new AuthResponse(token,"User Registered Successful");
 
 
     }
