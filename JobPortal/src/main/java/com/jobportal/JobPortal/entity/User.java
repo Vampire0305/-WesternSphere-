@@ -1,81 +1,78 @@
 package com.jobportal.JobPortal.entity;
 
 import com.jobportal.JobPortal.Enum.Role;
-
-import javax.persistence.Entity;
-
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Builder;
 
 import javax.persistence.*;
-
-
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name="users")
-
+@Table(name = "users")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private Long Id;
-
+    @NotBlank(message = "Name is required")
+    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
     private String name;
 
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
     @Column(unique = true)
     private String email;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters")
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public User() {}
+    @Builder.Default
+    private Boolean isActive = true;
 
-    public User(String name,String email,String password,Role role) {
-        this.name=name;
-        this.email=email;
-        this.password=password;
-        this.role=role;
+    @Builder.Default
+    private Boolean isEmailVerified = false;
+
+    @Builder.Default
+    private Integer failedLoginAttempts = 0;
+
+    private LocalDateTime lastLoginAt;
+
+    private LocalDateTime accountLockedUntil;
+
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    private String resetPasswordToken;
+
+    private LocalDateTime resetPasswordExpiry;
+
+    private String emailVerificationToken;
+
+    private LocalDateTime emailVerificationExpiry;
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public Long getId() {
-        return Id;
+    public boolean isAccountLocked() {
+        return accountLockedUntil != null && accountLockedUntil.isAfter(LocalDateTime.now());
     }
-
-    public void setId(Long id) {
-        Id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
 }

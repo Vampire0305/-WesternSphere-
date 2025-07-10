@@ -31,11 +31,11 @@ public class JobPostController {
         return ResponseEntity.ok(jobPostService.getByPostedByEmail(email));
     }
     @GetMapping("/jobTitle")
-    public ResponseEntity<List<JobPostDTO>>geyByJobTitle(@RequestParam String jobTitle){
+    public ResponseEntity<List<JobPostDTO>>getByJobTitle(@RequestParam String jobTitle){
         return ResponseEntity.ok(jobPostService.getByJobTitle(jobTitle));
     }
     @GetMapping("/jobType")
-    public ResponseEntity<List<JobPostDTO>>geByJobType(@RequestParam String jobType){
+    public ResponseEntity<List<JobPostDTO>>getByJobType(@RequestParam String jobType){
         return ResponseEntity.ok(jobPostService.getByJobType(jobType));
 
     }
