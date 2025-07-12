@@ -31,19 +31,23 @@ public class JWTUtil {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
-    public String generateToken(String email, String role) {
-        return generateToken(email, role, EXPIRATION_TIME);
+    public String generateToken(Long id,String email, String role) {
+        return generateToken(id,email, role, EXPIRATION_TIME);
     }
 
-    public String generateRefreshToken(String email, String role) {
-        return generateToken(email, role, REFRESH_EXPIRATION_TIME);
+    public String generateRefreshToken(Long id,String email, String role) {
+        return generateToken(id,email, role, REFRESH_EXPIRATION_TIME);
     }
 
-    private String generateToken(String email, String role, long expiration) {
+
+
+    private String generateToken(Long userId,String email, String role, long expiration) {
         try {
             Map<String, Object> claims = new HashMap<>();
             claims.put("role", role);
             claims.put("type", expiration == REFRESH_EXPIRATION_TIME ? "refresh" : "access");
+            claims.put("userId", userId);
+
 
             return Jwts.builder()
                     .setClaims(claims)
@@ -64,6 +68,10 @@ public class JWTUtil {
 
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+    public Long extractUserId(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("userId", Long.class); // safely gets userId as Long
     }
 
     public Date extractExpiration(String token) {
@@ -132,7 +140,8 @@ public class JWTUtil {
         try {
             String username = extractUsername(token);
             String role = extractRole(token);
-            return generateToken(username, role);
+            Long id=extractUserId(token);
+            return generateToken(id,username, role);
         } catch (Exception e) {
             logger.error("Token refresh failed: {}", e.getMessage());
             throw new RuntimeException("Token refresh failed", e);

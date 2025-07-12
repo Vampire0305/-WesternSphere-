@@ -2,7 +2,9 @@ package com.jobportal.JobPortal.service;
 
 import com.jobportal.JobPortal.DTO.*;
 import com.jobportal.JobPortal.Enum.Role;
+import com.jobportal.JobPortal.entity.Student;
 import com.jobportal.JobPortal.entity.User;
+import com.jobportal.JobPortal.repository.StudentRepository;
 import com.jobportal.JobPortal.repository.UserRepository;
 import com.jobportal.JobPortal.security.JWTUtil;
 import com.jobportal.JobPortal.exception.AuthenticationException;
@@ -28,6 +30,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JWTUtil jwtUtil;
     private final EmailService emailService;
+    private final StudentRepository studentRepository;
 
     @Value("${app.security.max-failed-attempts:5}")
     private int maxFailedAttempts;
@@ -66,12 +69,42 @@ public class AuthService {
                 .emailVerificationExpiry(LocalDateTime.now().plusHours(24))
                 .build();
 
+
+
+        if(role==Role.STUDENT && request.getStudentProfile() != null) {
+            StudentDTO dto = request.getStudentProfile();
+            Student student = new Student();
+            student.setUser(user);
+            student.setName(user.getName());                        // Required
+            student.setEmail(user.getEmail());                     // From user
+            if(dto.getPhone()!=null) student.setPhone(dto.getPhone());                      // Optional, but validated
+            student.setQualification(dto.getQualification());
+            if (dto.getResumeURL() != null) student.setResumeURL(dto.getResumeURL());
+            if (dto.getProfilePictureURL() != null) student.setProfilePictureURL(dto.getProfilePictureURL());
+            if (dto.getDateOfBirth() != null) student.setDateOfBirth(dto.getDateOfBirth());
+            if (dto.getCurrentLocation() != null) student.setCurrentLocation(dto.getCurrentLocation());
+            if (dto.getPreferredJobLocation() != null) student.setPreferredJobLocation(dto.getPreferredJobLocation());
+            if (dto.getExperienceYears() != null) student.setExperienceYears(dto.getExperienceYears());
+            if (dto.getSkills() != null) student.setSkills(dto.getSkills());
+            if (dto.getLinkedInProfile() != null) student.setLinkedInProfile(dto.getLinkedInProfile());
+            if (dto.getGithubProfile() != null) student.setGithubProfile(dto.getGithubProfile());
+            if (dto.getPortfolioURL() != null) student.setPortfolioURL(dto.getPortfolioURL());
+            if (dto.getExpectedSalary() != null) student.setExpectedSalary(dto.getExpectedSalary());
+            if (dto.getIsAvailableForHire() != null) student.setIsAvailableForHire(dto.getIsAvailableForHire());
+            if (dto.getBio() != null) student.setBio(dto.getBio());
+
+            studentRepository.save(student);
+
+        }
+        else {
+            return AuthResponse.builder().message("Error getting student information !!! TRY AGAIN").build();
+        }
         User savedUser = userRepository.save(user);
         log.info("User registered successfully with id: {}", savedUser.getId());
 
         // Generate tokens
-        String token = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getRole().name());
-        String refreshToken = jwtUtil.generateRefreshToken(savedUser.getEmail(),savedUser.getRole().name());
+        String token = jwtUtil.generateToken(savedUser.getId(),savedUser.getEmail(), savedUser.getRole().name());
+        String refreshToken = jwtUtil.generateRefreshToken(savedUser.getId(),savedUser.getEmail(),savedUser.getRole().name());
 
         return AuthResponse.builder()
                 .token(token)
@@ -117,11 +150,11 @@ public class AuthService {
 
         log.info("Login successful for user: {}", user.getEmail());
 
-        // Generate tokens
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        // Generate tokens  ( TODO : change this later )
+        String token = jwtUtil.generateToken(user.getId(),user.getEmail(), user.getRole().name());
         String refreshToken = request.getRememberMe() ?
-                jwtUtil.generateRefreshToken(user.getEmail(),user.getRole().name()) :
-                jwtUtil.generateRefreshToken(user.getEmail(),user.getRole().name());
+                jwtUtil.generateRefreshToken(user.getId(),user.getEmail(),user.getRole().name()) :
+                jwtUtil.generateRefreshToken(user.getId(),user.getEmail(),user.getRole().name());
 
         return AuthResponse.builder()
                 .token(token)
@@ -153,8 +186,8 @@ public class AuthService {
             throw new AuthenticationException("Account is deactivated");
         }
 
-        String newToken = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
-        String newRefreshToken = jwtUtil.generateRefreshToken(user.getEmail(),user.getRole().name());
+        String newToken = jwtUtil.generateToken(user.getId(),user.getEmail(), user.getRole().name());
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getId(),user.getEmail(),user.getRole().name());
 
         return AuthResponse.builder()
                 .token(newToken)
