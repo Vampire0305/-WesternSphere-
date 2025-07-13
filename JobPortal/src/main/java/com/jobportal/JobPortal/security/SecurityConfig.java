@@ -45,7 +45,7 @@ public class SecurityConfig {
                 .antMatchers("/api/recruiters/**").authenticated()
                 .antMatchers("/api/jobPosts/**").authenticated()
                 .antMatchers("/api/notify/**").authenticated()
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
