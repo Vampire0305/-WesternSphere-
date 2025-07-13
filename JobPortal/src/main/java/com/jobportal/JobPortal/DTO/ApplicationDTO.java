@@ -1,77 +1,49 @@
 package com.jobportal.JobPortal.DTO;
 
 import com.jobportal.JobPortal.Enum.Status;
-
+import lombok.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Date;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ApplicationDTO {
-    public Long id;
-    public Long studentId;
 
-    public ApplicationDTO() {
-    }
+    private Long id;
 
-    public Long jobId;
-    public Status status;
-    public String resumeUrl;
+    @NotNull(message = "Student ID cannot be null")
+    private Long studentId;
 
-    public String getResumeUrl() {
-        return resumeUrl;
-    }
+    @NotNull(message = "Job Post ID cannot be null")
+    private Long jobPostId;
 
-    public void setResumeUrl(String resumeUrl) {
-        this.resumeUrl = resumeUrl;
-    }
+    private String studentName;
+    private String studentEmail;
+    private String jobTitle;
+    private String companyName;
 
-    public ApplicationDTO(Long id, Long studentId, Long jobId, Status status, Date appliedDate, String resumeUrl) {
-        this.id = id;
-        this.studentId = studentId;
-        this.jobId = jobId;
-        this.status = status;
-        this.appliedDate = appliedDate;
-        this.resumeUrl = resumeUrl;
-    }
+    @Size(max = 500, message = "Resume URL cannot exceed 500 characters")
+    private String resumeUrl;
 
-    public Long getId() {
-        return id;
-    }
+    @Builder.Default
+    private Status status = Status.PENDING;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private Date appliedDate;
+    private Date updatedAt;
 
-    public Long getStudentId() {
-        return studentId;
-    }
+    @Size(max = 2000, message = "Cover letter cannot exceed 2000 characters")
+    private String coverLetter;
 
-    public void setStudentId(Long studentId) {
-        this.studentId = studentId;
-    }
+    @Builder.Default
+    private Boolean isArchived = false;
 
-    public Long getJobId() {
-        return jobId;
-    }
-
-    public void setJobId(Long jobId) {
-        this.jobId = jobId;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public Date getAppliedDate() {
-        return appliedDate;
-    }
-
-    public void setAppliedDate(Date appliedDate) {
-        this.appliedDate = appliedDate;
-    }
-
-    public Date appliedDate;
-
+    // Additional fields for enhanced functionality
+    private String applicationReference;
+    private Integer applicationScore;
+    private String feedback;
+    private String interviewNotes;
 }
