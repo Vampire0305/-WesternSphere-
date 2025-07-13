@@ -2,6 +2,7 @@ package com.jobportal.JobPortal.service;
 
 import com.jobportal.JobPortal.DTO.StudentDTO;
 import com.jobportal.JobPortal.entity.Student;
+import com.jobportal.JobPortal.entity.User;
 import com.jobportal.JobPortal.exception.ValidationException;
 import com.jobportal.JobPortal.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,29 @@ public class StudentService {
         }
 
         Student student = mapToEntity(dto);
+        student.setId(null); // Ensure new entity
+
+        Student savedStudent = studentRepository.save(student);
+        log.info("Student created successfully with ID: {}", savedStudent.getId());
+
+        return mapToDTO(savedStudent);
+    }
+
+    public StudentDTO createStudent(StudentDTO dto, User user) {
+        log.info("Creating new student with email: {}", dto.getEmail());
+
+        validateStudentData(dto);
+
+        if (studentRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new ValidationException("Student with this email already exists");
+        }
+
+        if (dto.getPhone() != null && studentRepository.findByPhone(dto.getPhone()).isPresent()) {
+            throw new ValidationException("Student with this phone number already exists");
+        }
+
+        Student student = mapToEntity(dto);
+        student.setUser(user);
         student.setId(null); // Ensure new entity
 
         Student savedStudent = studentRepository.save(student);

@@ -1,88 +1,65 @@
 package com.jobportal.JobPortal.entity;
 
-import com.jobportal.JobPortal.Enum.Role;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name="adminUsers")
+@Table(name = "admin_users", indexes = {
+        @Index(name = "idx_admin_email", columnList = "email")
+})
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+
 public class AdminUser {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
+
+    @NotBlank(message = "Admin name is required")
+    @Column(nullable = false)
     private String name;
 
-    @Column(unique=true)
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
+    @Column(unique = true, nullable = false)
     private String email;
-    private Role role;
 
-    private boolean active=true;
-    private boolean blocked = false;
+    @Column(name = "phone")
+    private String phone;
 
-    public AdminUser(Long id,String name,String email,Role role,boolean active,boolean blocked) {
-        this.id=id;
-        this.name=name;
-        this.email=email;
-        this.role = role;
-        this.active=active;
-        this.blocked=blocked;
+    @Column(name = "role")
+    private String role; // e.g., SUPER_ADMIN, MODERATOR, etc.
 
+    @Builder.Default
+    private Boolean isActive = true;
+
+    @Builder.Default
+    private Boolean isBlocked = false;
+
+    private LocalDateTime lastLoginAt;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    public void updateLastLogin() {
+        this.lastLoginAt = LocalDateTime.now();
     }
-
-    public AdminUser() {
-
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-    public boolean isActive() {
-        return active;
-    }
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-    public boolean isBlocked() {
-        return blocked;
-    }
-    public void setBlocked(boolean blocked) {
-        this.blocked = blocked;
-    }
-
-
-
-
-
-
 }

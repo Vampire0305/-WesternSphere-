@@ -1,87 +1,100 @@
 package com.jobportal.JobPortal.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+
 import javax.persistence.*;
+import javax.validation.constraints.*;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name="recruiters")
+@Table(name = "recruiters")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Recruiter {
+
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
+
+    @NotBlank
+    @Size(min = 2, max = 100)
+    @Column(nullable = false)
     private String name;
+
+    @Email
+    @NotBlank
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$")
+    @Column(unique = true)
     private String phone;
+
+    @NotBlank
+    @Size(min = 2, max = 200)
+    @Column(name = "company_name", nullable = false)
     private String companyName;
+
+    @Size(max = 2000)
+    @Column(name = "company_description", columnDefinition = "TEXT")
     private String companyDescription;
+
+    @Pattern(regexp = "^(https?://)?(www\\.)?[a-zA-Z0-9-]+\\.[a-zA-Z]{2,}.*$")
     private String companyWebsite;
 
-    public Recruiter() {}
+    private String linkedinProfile;
 
-    public Recruiter(Long id, String name, String email, String phone, String companyName, String companyDescription, String companyWebsite) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.phone = phone;
-        this.companyName = companyName;
-        this.companyDescription = companyDescription;
-        this.companyWebsite = companyWebsite;
+    @Enumerated(EnumType.STRING)
+    private CompanySize companySize;
+
+    private String industry;
+    private String companyLocation;
+
+    @Min(1800)
+    @Max(2024)
+    private Integer companyFoundedYear;
+
+    @Builder.Default
+    private Boolean isVerified = false;
+
+    @Builder.Default
+    private Boolean isActive = true;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
+    private LocalDateTime lastLoginAt;
+
+    public enum CompanySize {
+        STARTUP("1-10"),
+        SMALL("11-50"),
+        MEDIUM("51-200"),
+        LARGE("201-1000"),
+        ENTERPRISE("1000+");
+
+        private final String range;
+
+        CompanySize(String range) {
+            this.range = range;
+        }
+
+        public String getRange() {
+            return range;
+        }
     }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public String getCompanyDescription() {
-        return companyDescription;
-    }
-
-    public void setCompanyDescription(String companyDescription) {
-        this.companyDescription = companyDescription;
-    }
-
-    public String getCompanyWebsite() {
-        return companyWebsite;
-    }
-
-    public void setCompanyWebsite(String companyWebsite) {
-        this.companyWebsite = companyWebsite;
-    }
-
-
 }

@@ -1,89 +1,62 @@
 package com.jobportal.JobPortal.entity;
 
-
-import java.util.Date;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
-@Table(name="jobPosts")
-
+@Table(name = "job_posts")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class JobPost {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String jobTitle;
+    @NotBlank
+    private String title;
+
+    @Lob
     private String jobDescription;
-    private String jobLocation;
-    private String jobType;
-    private String companyName;
-    private String postedByEmail;
-    private Date postedDate;
 
+    @NotBlank
+    private String location;
 
-    public JobPost() {}
-    public JobPost(Long id,String jobTitle,String jobDescription,String JobLocation,String jobType,String companyName,String postedByEmail,Date postedDSate) {
-        this.id=id;
-        this.jobTitle=jobTitle;
-        this.jobType=jobType;
-        this.jobDescription=jobDescription;
-        this.jobLocation=jobLocation;
-        this.companyName=companyName;
-        this.postedByEmail=postedByEmail;
-        this.postedDate=postedDate;
-    }
-    public Long getId() {
-        return id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
-    public String getJobTitle() {
-        return jobTitle;
-    }
-    public void setJobTitle(String jobTitle) {
-        this.jobTitle = jobTitle;
-    }
-    public String getJobDescription() {
-        return jobDescription;
-    }
-    public void setJobDescription(String jobDescription) {
-        this.jobDescription = jobDescription;
-    }
-    public String getJobLocation() {
-        return jobLocation;
-    }
-    public void setJobLocation(String jobLocation) {
-        this.jobLocation = jobLocation;
-    }
-    public String getJobType() {
-        return jobType;
-    }
-    public void setJobType(String jobType) {
-        this.jobType = jobType;
-    }
-    public String getCompanyName() {
-        return companyName;
-    }
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-    public String getPostedByemail() {
-        return postedByEmail;
-    }
-    public void setPostedByemail(String postedByemail) {
-        this.postedByEmail = postedByemail;
-    }
-    public Date getPostedDate() {
-        return postedDate;
-    }
-    public void setPostedDate(Date postedDate) {
-        this.postedDate = postedDate;
-    }
+    private String employmentType; // e.g., Full-time, Part-time, Internship
 
+    private Integer minExperience;
 
+    private Integer maxExperience;
 
+    private Double minSalary;
+
+    private Double maxSalary;
+
+    private Boolean isActive;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recruiter_id", nullable = false)
+    private Recruiter recruiter;
+
+    @ManyToMany
+    @JoinTable(
+            name = "job_applications",
+            joinColumns = @JoinColumn(name = "job_post_id"),
+            inverseJoinColumns = @JoinColumn(name = "student_id")
+    )
+    private Set<Student> applicants;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

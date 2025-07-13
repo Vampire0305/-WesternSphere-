@@ -30,7 +30,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JWTUtil jwtUtil;
     private final EmailService emailService;
-    private final StudentRepository studentRepository;
+    private final StudentService studentService;
+    private final RecruiterService recruiterService;
+    private final AdminUserService adminUserService;
 
     @Value("${app.security.max-failed-attempts:5}")
     private int maxFailedAttempts;
@@ -38,6 +40,7 @@ public class AuthService {
     @Value("${app.security.account-lock-duration:30}")
     private int accountLockDurationMinutes;
 
+    @Transactional
     public AuthResponse register(RegisterRequest request) {
         log.info("Attempting to register user with email: {}", request.getEmail());
 
@@ -69,37 +72,20 @@ public class AuthService {
                 .emailVerificationExpiry(LocalDateTime.now().plusHours(24))
                 .build();
 
+        User savedUser = userRepository.save(user);
 
 
         if(role==Role.STUDENT && request.getStudentProfile() != null) {
-            StudentDTO dto = request.getStudentProfile();
-            Student student = new Student();
-            student.setUser(user);
-            student.setName(user.getName());                        // Required
-            student.setEmail(user.getEmail());                     // From user
-            if(dto.getPhone()!=null) student.setPhone(dto.getPhone());                      // Optional, but validated
-            student.setQualification(dto.getQualification());
-            if (dto.getResumeURL() != null) student.setResumeURL(dto.getResumeURL());
-            if (dto.getProfilePictureURL() != null) student.setProfilePictureURL(dto.getProfilePictureURL());
-            if (dto.getDateOfBirth() != null) student.setDateOfBirth(dto.getDateOfBirth());
-            if (dto.getCurrentLocation() != null) student.setCurrentLocation(dto.getCurrentLocation());
-            if (dto.getPreferredJobLocation() != null) student.setPreferredJobLocation(dto.getPreferredJobLocation());
-            if (dto.getExperienceYears() != null) student.setExperienceYears(dto.getExperienceYears());
-            if (dto.getSkills() != null) student.setSkills(dto.getSkills());
-            if (dto.getLinkedInProfile() != null) student.setLinkedInProfile(dto.getLinkedInProfile());
-            if (dto.getGithubProfile() != null) student.setGithubProfile(dto.getGithubProfile());
-            if (dto.getPortfolioURL() != null) student.setPortfolioURL(dto.getPortfolioURL());
-            if (dto.getExpectedSalary() != null) student.setExpectedSalary(dto.getExpectedSalary());
-            if (dto.getIsAvailableForHire() != null) student.setIsAvailableForHire(dto.getIsAvailableForHire());
-            if (dto.getBio() != null) student.setBio(dto.getBio());
+            studentService.createStudent(request.getStudentProfile(),savedUser);
+        } else if (role == Role.RECRUITER && request.getRecruiterProfile() != null) {
+            recruiterService.createRecruiter(request.getRecruiterProfile(),savedUser);
+        } else if (role ==Role.ADMIN && request.getAdminUserProfile() != null) {
+            adminUserService.createAdmin(request.getAdminUserProfile(),savedUser);
 
-            studentRepository.save(student);
+        } else {
+            return AuthResponse.builder().message("Error getting "+role.name()+" information !!! TRY AGAIN").build();
+        }
 
-        }
-        else {
-            return AuthResponse.builder().message("Error getting student information !!! TRY AGAIN").build();
-        }
-        User savedUser = userRepository.save(user);
         log.info("User registered successfully with id: {}", savedUser.getId());
 
         // Generate tokens

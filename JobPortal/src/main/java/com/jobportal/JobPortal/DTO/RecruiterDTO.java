@@ -1,85 +1,62 @@
 package com.jobportal.JobPortal.DTO;
 
-import jdk.nashorn.internal.objects.annotations.Getter;
-import jdk.nashorn.internal.objects.annotations.Setter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.jobportal.JobPortal.entity.Recruiter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+
+
+import javax.persistence.*;
+import javax.validation.constraints.*;
+import java.time.LocalDateTime;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RecruiterDTO {
 
-    public Long id;
-    public String name;
-    public String email;
-    public String phone;
+    private Long id;
 
-    public Long getId() {
-        return id;
-    }
+    @NotBlank
+    @Size(min = 2, max = 100)
+    private String name;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @Email
+    @NotBlank
+    private String email;
 
-    public String getName() {
-        return name;
-    }
+    @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$")
+    private String phone;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    @NotBlank
+    @Size(min = 2, max = 200)
+    private String companyName;
 
-    public String getEmail() {
-        return email;
-    }
+    @Size(max = 2000)
+    private String companyDescription;
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    @Pattern(regexp = "^(https?://)?(www\\.)?[a-zA-Z0-9-]+\\.[a-zA-Z]{2,}.*$")
+    private String companyWebsite;
 
-    public String getPhone() {
-        return phone;
-    }
+    private String linkedinProfile;
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+    private Recruiter.CompanySize companySize;
 
-    public String getCompanyName() {
-        return companyName;
-    }
+    private String industry;
+    private String companyLocation;
 
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
+    @Min(1800)
+    @Max(2024)
+    private Integer companyFoundedYear;
 
-    public String getCompanyDescription() {
-        return companyDescription;
-    }
+    private Boolean isVerified;
+    private Boolean isActive;
 
-    public void setCompanyDescription(String companyDescription) {
-        this.companyDescription = companyDescription;
-    }
-
-    public String getCompanyWebsite() {
-        return companyWebsite;
-    }
-
-    public void setCompanyWebsite(String companyWebsite) {
-        this.companyWebsite = companyWebsite;
-    }
-
-    public String companyName;
-
-    public RecruiterDTO(Long id, String name, String email, String phone, String companyName, String companyDescription, String companyWebsite) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.phone = phone;
-        this.companyName = companyName;
-        this.companyDescription = companyDescription;
-        this.companyWebsite = companyWebsite;
-    }
-
-    public String companyDescription;
-    public String companyWebsite;
-
-    public RecruiterDTO() {}
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

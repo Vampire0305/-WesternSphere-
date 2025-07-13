@@ -2,49 +2,187 @@ package com.jobportal.JobPortal.service;
 
 import com.jobportal.JobPortal.DTO.RecruiterDTO;
 import com.jobportal.JobPortal.entity.Recruiter;
+import com.jobportal.JobPortal.entity.User;
+import com.jobportal.JobPortal.exception.ValidationException;
 import com.jobportal.JobPortal.repository.RecruiterRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional
 public class RecruiterService {
-    @Autowired
-    private RecruiterRepository recruiterRepository;
+
+    private final RecruiterRepository recruiterRepository;
 
     public RecruiterDTO createRecruiter(RecruiterDTO dto) {
-        Recruiter recruiter = new Recruiter(dto.id,dto.name,dto.email,dto.phone,dto.companyName,dto.companyDescription,dto.companyWebsite);
-        recruiter=recruiterRepository.save(recruiter);
-        return dto;
+        log.info("Creating new recruiter with email: {}", dto.getEmail());
+
+        validateRecruiterData(dto);
+
+        if (recruiterRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new ValidationException("Recruiter with this email already exists");
+        }
+
+        Recruiter recruiter = mapToEntity(dto);
+        recruiter.setId(null);
+        Recruiter savedRecruiter = recruiterRepository.save(recruiter);
+
+        log.info("Recruiter created successfully with ID: {}", savedRecruiter.getId());
+        return mapToDTO(savedRecruiter);
+    }
+    public RecruiterDTO createRecruiter(RecruiterDTO dto, User user) {
+        log.info("Creating new recruiter with email: {}", dto.getEmail());
+
+        validateRecruiterData(dto);
+
+        if (recruiterRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new ValidationException("Recruiter with this email already exists");
+        }
+
+        Recruiter recruiter = mapToEntity(dto);
+        recruiter.setUser(user);
+        recruiter.setId(null);
+        Recruiter savedRecruiter = recruiterRepository.save(recruiter);
+
+        log.info("Recruiter created successfully with ID: {}", savedRecruiter.getId());
+        return mapToDTO(savedRecruiter);
     }
 
+    public RecruiterDTO updateRecruiter(Long id, RecruiterDTO dto) {
+        log.info("Updating recruiter with ID: {}", id);
+
+        Recruiter existingRecruiter = recruiterRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Recruiter not found with ID: " + id));
+
+        validateRecruiterData(dto);
+
+        if (!existingRecruiter.getEmail().equals(dto.getEmail()) &&
+                recruiterRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new ValidationException("Recruiter with this email already exists");
+        }
+
+        updateRecruiterFields(existingRecruiter, dto);
+        Recruiter updatedRecruiter = recruiterRepository.save(existingRecruiter);
+
+        log.info("Recruiter updated successfully with ID: {}", updatedRecruiter.getId());
+        return mapToDTO(updatedRecruiter);
+    }
+
+    @Transactional(readOnly = true)
+    public RecruiterDTO getRecruiterById(Long id) {
+        Recruiter recruiter = recruiterRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Recruiter not found with ID: " + id));
+        return mapToDTO(recruiter);
+    }
+
+    @Transactional(readOnly = true)
     public RecruiterDTO getRecruiterByEmail(String email) {
-        Recruiter recruiter= recruiterRepository.findByEmail(email).get();
-        if (recruiter==null) {return null;}
-        return new RecruiterDTO(
-                recruiter.getId(),
-                recruiter.getName(),
-                recruiter.getEmail(),
-                recruiter.getPhone(),
-                recruiter.getCompanyName(),
-                recruiter.getCompanyDescription(),
-                recruiter.getCompanyWebsite()
-        );
-
+        if (email == null || email.trim().isEmpty()) {
+            throw new ValidationException("Email cannot be null or empty");
+        }
+        Recruiter recruiter = recruiterRepository.findByEmail(email)
+                .orElseThrow(() -> new ValidationException("Recruiter not found with email: " + email));
+        return mapToDTO(recruiter);
     }
 
-    public RecruiterDTO getRecruiterById(long id) {
-        Recruiter recruiter=recruiterRepository.findById(id).get();
-        if (recruiter==null) {return null;}
-        return new RecruiterDTO(
-                recruiter.getId(),
-                recruiter.getName(),
-                recruiter.getEmail(),
-                recruiter.getPhone(),
-                recruiter.getCompanyName(),
-                recruiter.getCompanyDescription(),
-                recruiter.getCompanyWebsite()
-        );
-
+    @Transactional(readOnly = true)
+    public Page<RecruiterDTO> getAllRecruiters(int page, int size, String sortBy, String sortDir) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return recruiterRepository.findAll(pageable).map(this::mapToDTO);
     }
 
+    public void deleteRecruiter(Long id) {
+        if (!recruiterRepository.existsById(id)) {
+            throw new ValidationException("Recruiter not found with ID: " + id);
+        }
+        recruiterRepository.deleteById(id);
+        log.info("Recruiter deleted successfully with ID: {}", id);
+    }
+
+    public void updateLastLogin(Long id) {
+        Recruiter recruiter = recruiterRepository.findById(id)
+                .orElseThrow(() -> new ValidationException("Recruiter not found with ID: " + id));
+        recruiter.setLastLoginAt(LocalDateTime.now());
+        recruiterRepository.save(recruiter);
+    }
+
+    // Helper methods
+
+    private void validateRecruiterData(RecruiterDTO dto) {
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            throw new ValidationException("Name is required");
+        }
+        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
+            throw new ValidationException("Email is required");
+        }
+        if (dto.getCompanyName() == null || dto.getCompanyName().trim().isEmpty()) {
+            throw new ValidationException("Company name is required");
+        }
+    }
+
+    private void updateRecruiterFields(Recruiter recruiter, RecruiterDTO dto) {
+        recruiter.setName(dto.getName());
+        recruiter.setEmail(dto.getEmail());
+        recruiter.setPhone(dto.getPhone());
+        recruiter.setCompanyName(dto.getCompanyName());
+        recruiter.setCompanyDescription(dto.getCompanyDescription());
+        recruiter.setCompanyWebsite(dto.getCompanyWebsite());
+        recruiter.setLinkedinProfile(dto.getLinkedinProfile());
+        recruiter.setCompanySize(dto.getCompanySize());
+        recruiter.setIndustry(dto.getIndustry());
+        recruiter.setCompanyLocation(dto.getCompanyLocation());
+        recruiter.setCompanyFoundedYear(dto.getCompanyFoundedYear());
+    }
+
+    private Recruiter mapToEntity(RecruiterDTO dto) {
+        return Recruiter.builder()
+                .id(dto.getId())
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .phone(dto.getPhone())
+                .companyName(dto.getCompanyName())
+                .companyDescription(dto.getCompanyDescription())
+                .companyWebsite(dto.getCompanyWebsite())
+                .linkedinProfile(dto.getLinkedinProfile())
+                .companySize(dto.getCompanySize())
+                .industry(dto.getIndustry())
+                .companyLocation(dto.getCompanyLocation())
+                .companyFoundedYear(dto.getCompanyFoundedYear())
+                .isVerified(dto.getIsVerified() != null ? dto.getIsVerified() : false)
+                .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
+                .build();
+    }
+
+    private RecruiterDTO mapToDTO(Recruiter recruiter) {
+        return RecruiterDTO.builder()
+                .id(recruiter.getId())
+                .name(recruiter.getName())
+                .email(recruiter.getEmail())
+                .phone(recruiter.getPhone())
+                .companyName(recruiter.getCompanyName())
+                .companyDescription(recruiter.getCompanyDescription())
+                .companyWebsite(recruiter.getCompanyWebsite())
+                .linkedinProfile(recruiter.getLinkedinProfile())
+                .companySize(recruiter.getCompanySize())
+                .industry(recruiter.getIndustry())
+                .companyLocation(recruiter.getCompanyLocation())
+                .companyFoundedYear(recruiter.getCompanyFoundedYear())
+                .isVerified(recruiter.getIsVerified())
+                .isActive(recruiter.getIsActive())
+                .createdAt(recruiter.getCreatedAt())
+                .updatedAt(recruiter.getUpdatedAt())
+                .build();
+    }
 }

@@ -34,4 +34,6 @@ public class RegisterRequest {
     private String role;
 
     private StudentDTO studentProfile;
+    private RecruiterDTO recruiterProfile;
+    private AdminUserDTO adminUserProfile;
 }

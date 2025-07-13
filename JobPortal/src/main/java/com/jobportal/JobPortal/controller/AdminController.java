@@ -2,14 +2,10 @@ package com.jobportal.JobPortal.controller;
 
 import java.util.List;
 
+import com.jobportal.JobPortal.DTO.RecruiterDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.jobportal.JobPortal.DTO.AdminUserDTO;
 import com.jobportal.JobPortal.Enum.Role;
@@ -23,6 +19,11 @@ public class AdminController {
     @Autowired
     private AdminUserService adminUserService;
 
+    @PostMapping("/register")
+    public ResponseEntity<AdminUserDTO> register(@RequestBody AdminUserDTO adminUser) {
+        return ResponseEntity.ok(adminUserService.createAdmin(adminUser));
+    }
+
 
     @GetMapping("/users")
     public ResponseEntity<List<AdminUserDTO>>getAllUsers(){
@@ -35,7 +36,7 @@ public class AdminController {
 
     @PutMapping("/{id}/status")
     public ResponseEntity<AdminUserDTO>updateUserStatus(@RequestParam Long id, @RequestParam boolean active){
-        return ResponseEntity.ok(adminUserService.upadateStatus(id, active));
+        return ResponseEntity.ok(adminUserService.updateStatus(id, active));
     }
     @PutMapping("/{id}/block")
     public ResponseEntity<AdminUserDTO>blockUser(@PathVariable Long id){
