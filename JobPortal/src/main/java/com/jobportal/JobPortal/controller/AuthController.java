@@ -1,11 +1,13 @@
 package com.jobportal.JobPortal.controller;
 
 import com.jobportal.JobPortal.DTO.*;
+import com.jobportal.JobPortal.repository.UserRepository;
 import com.jobportal.JobPortal.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,7 @@ import javax.validation.Valid;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -82,4 +85,30 @@ public class AuthController {
         authService.logout(jwtToken);
         return ResponseEntity.ok("Logout successful.");
     }
+
+    @PostMapping("/get-email-token")
+    public ResponseEntity<String> getNewEmailToken(@RequestHeader("Authorization") String refreshToken) {
+        log.info("Token refresh request received");
+        String token = refreshToken.startsWith("Bearer ") ?
+                refreshToken.substring(7) : refreshToken;
+        authService.getNewEmailToken(token);
+        return ResponseEntity.ok("Email sent to your email");
+    }
+    @GetMapping("/internal/count")
+    @PreAuthorize("hasRole('ADMIN')") // Only users with the ADMIN role can access this
+    public ResponseEntity<Long> countInternal() {
+        try {
+            Long count = userRepository.count();
+            // Return a 200 OK status with the count in the body
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            // Handle any database or repository exceptions gracefully
+            // Return a 500 Internal Server Error with a more informative message
+            // You can also log the exception here for debugging
+            System.err.println("Error while counting users: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0L); // Or just return 0
+        }
+    }
+
+
 }

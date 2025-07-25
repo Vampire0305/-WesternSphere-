@@ -1,6 +1,7 @@
 package com.jobportal.JobPortal.controller;
 
 import com.jobportal.JobPortal.DTO.StudentDTO;
+import com.jobportal.JobPortal.repository.StudentRepository;
 import com.jobportal.JobPortal.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ import java.util.*;
 public class StudentController {
 
     private final StudentService studentService;
+    private final StudentRepository studentRepository;
 
     // ────────────────────────────── CRUD OPERATIONS ──────────────────────────────
 
@@ -224,5 +226,20 @@ public class StudentController {
         response.put("status", "UP");
         response.put("service", "StudentController");
         return ResponseEntity.ok(response);
+    }
+    @GetMapping("/internal/count")
+    @PreAuthorize("hasRole('ADMIN')") // Only users with the ADMIN role can access this
+    public ResponseEntity<Long> countInternal() {
+        try {
+            Long count = studentRepository.count();
+            // Return a 200 OK status with the count in the body
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            // Handle any database or repository exceptions gracefully
+            // Return a 500 Internal Server Error with a more informative message
+            // You can also log the exception here for debugging
+            System.err.println("Error while counting student: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0L); // Or just return 0
+        }
     }
 }

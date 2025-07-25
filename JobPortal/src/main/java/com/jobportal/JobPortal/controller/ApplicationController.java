@@ -2,6 +2,7 @@ package com.jobportal.JobPortal.controller;
 
 import com.jobportal.JobPortal.DTO.ApplicationDTO;
 import com.jobportal.JobPortal.Enum.Status;
+import com.jobportal.JobPortal.repository.ApplicationRepository;
 import com.jobportal.JobPortal.service.ApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,9 @@ public class ApplicationController {
 
     @Autowired
     private ApplicationService applicationService;
+
+    @Autowired
+    private ApplicationRepository applicationRepository;
 
     @PostMapping("/apply")
     @PreAuthorize("hasRole('STUDENT')")
@@ -202,6 +206,21 @@ public class ApplicationController {
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+    @GetMapping("/internal/count")
+    @PreAuthorize("hasRole('ADMIN')") // Only users with the ADMIN role can access this
+    public ResponseEntity<Long> countInternal() {
+        try {
+            Long count = applicationRepository.count();
+            // Return a 200 OK status with the count in the body
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            // Handle any database or repository exceptions gracefully
+            // Return a 500 Internal Server Error with a more informative message
+            // You can also log the exception here for debugging
+            System.err.println("Error while counting applications: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0L); // Or just return 0
         }
     }
 

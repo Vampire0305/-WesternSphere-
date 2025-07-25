@@ -269,6 +269,25 @@ public class AuthService {
         log.info("Email verified successfully for user: {}", user.getEmail());
     }
 
+    public void getNewEmailToken(String token){
+        if (!jwtUtil.validateToken(token)) {
+            throw new AuthenticationException("Invalid refresh token");
+        }
+        String email=jwtUtil.extractUsername(token);
+        EmailRequest emailRequest = new EmailRequest();
+        User user= userRepository.findByEmail(email).orElseThrow(() -> new AuthenticationException("User not found"));
+        if (!user.getIsActive()) {
+            throw new AuthenticationException("Account is deactivated . Login and try again.");
+        }
+        String etoken=UUID.randomUUID().toString();
+        user.setEmailVerificationToken(etoken);
+        user.setEmailVerificationExpiry(LocalDateTime.now().plusHours(24));
+        emailRequest.to=email;
+        emailRequest.subject="New Email Token";
+        emailRequest.body="Your new email token is "+etoken+" \n.Pls verify your email with it within 24 hours.";
+        emailService.sendEmail(emailRequest);
+    }
+
     public void logout(String token) {
         log.info("User logout requested");
         // TODO: Implement token blacklist

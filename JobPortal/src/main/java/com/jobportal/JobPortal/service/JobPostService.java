@@ -35,6 +35,9 @@ public class JobPostService {
     ));
 
     public JobPostDTO postJob(JobPostDTO dto) {
+        System.out.println(dto);
+        System.out.println(dto.recruiterId);
+
         validateJobPostDTO(dto);
 
         Recruiter recruiter = recruiterRepository.findById(dto.getRecruiterId())

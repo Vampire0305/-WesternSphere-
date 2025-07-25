@@ -25,8 +25,6 @@ public class AdminUserDTO {
 
     private String phone;
 
-    private String role;
-
     private Boolean isActive;
     private Boolean isBlocked;
 

@@ -1,7 +1,13 @@
 package com.jobportal.JobPortal.security;
 
+import com.jobportal.JobPortal.entity.Recruiter;
+import com.jobportal.JobPortal.repository.RecruiterRepository;
+import com.jobportal.JobPortal.repository.UserRepository;
+import com.jobportal.JobPortal.service.AuthService;
+import com.jobportal.JobPortal.service.RecruiterService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
@@ -15,6 +21,12 @@ import java.util.function.Function;
 
 @Component
 public class JWTUtil {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RecruiterRepository recruiterRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(JWTUtil.class);
 
@@ -44,9 +56,12 @@ public class JWTUtil {
     private String generateToken(Long userId,String email, String role, long expiration) {
         try {
             Map<String, Object> claims = new HashMap<>();
+            Recruiter recruiter = recruiterRepository.findByEmail(email).orElse(null);
+
             claims.put("role", role);
             claims.put("type", expiration == REFRESH_EXPIRATION_TIME ? "refresh" : "access");
             claims.put("userId", userId);
+            claims.put("payStat",recruiter!=null ? recruiter.getPaymentStatus() : "PENDING");
 
 
             return Jwts.builder()
@@ -64,6 +79,10 @@ public class JWTUtil {
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+    public String extractPayStat(String token){
+        Claims claims = extractAllClaims(token);
+        return claims.get("payStat",String.class);
     }
 
     public String extractRole(String token) {

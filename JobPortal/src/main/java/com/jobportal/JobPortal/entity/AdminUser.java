@@ -40,13 +40,12 @@ public class AdminUser {
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "role")
-    private String role; // e.g., SUPER_ADMIN, MODERATOR, etc.
-
     @Builder.Default
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
     @Builder.Default
+    @Column(name = "is_blocked", nullable = false)
     private Boolean isBlocked = false;
 
     private LocalDateTime lastLoginAt;

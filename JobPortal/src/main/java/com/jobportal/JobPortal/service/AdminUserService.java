@@ -110,10 +110,6 @@ public class AdminUserService {
         return adminUserRepository.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    public List<AdminUserDTO> getUserByRole(Role role) {
-        return adminUserRepository.findByRole(role).stream().map(this::mapToDTO).collect(Collectors.toList());
-    }
-
     public AdminUserDTO blockUser(Long id) {
         AdminUser user = adminUserRepository.findById(id)
                 .orElseThrow(() -> new ValidationException("Admin not found with ID: " + id));
@@ -166,7 +162,6 @@ public class AdminUserService {
         admin.setName(dto.getName());
         admin.setEmail(dto.getEmail());
         admin.setPhone(dto.getPhone());
-        admin.setRole(dto.getRole());
         admin.setIsActive(dto.getIsActive());
     }
 
@@ -176,7 +171,6 @@ public class AdminUserService {
                 .name(dto.getName())
                 .email(dto.getEmail())
                 .phone(dto.getPhone())
-                .role(dto.getRole())
                 .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
                 .isBlocked(dto.getIsBlocked() != null ? dto.getIsBlocked() : false)
                 .build();
@@ -188,7 +182,6 @@ public class AdminUserService {
                 .name(admin.getName())
                 .email(admin.getEmail())
                 .phone(admin.getPhone())
-                .role(admin.getRole())
                 .isActive(admin.getIsActive())
                 .isBlocked(admin.getIsBlocked())
                 .createdAt(admin.getCreatedAt())

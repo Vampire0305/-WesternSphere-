@@ -1,5 +1,6 @@
 package com.jobportal.JobPortal.entity;
 
+import com.jobportal.JobPortal.Enum.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -79,6 +80,11 @@ public class Recruiter {
     private LocalDateTime updatedAt;
 
     private LocalDateTime lastLoginAt;
+    private String paymentStatus="PENDING";
+    @ManyToOne
+    @JoinColumn(name = "subscription_plan_id")
+    private SubscriptionPlan subscriptionPlan;
+
 
     public enum CompanySize {
         STARTUP("1-10"),

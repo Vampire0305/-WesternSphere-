@@ -13,8 +13,6 @@ public interface AdminUserRepository extends JpaRepository<AdminUser, Long> {
 
     Optional<AdminUser> findByEmail(String email);
 
-    List<AdminUser> findByRole(Role role);
-
     List<AdminUser> findByIsActive(boolean isActive);
 
     List<AdminUser> findByIsBlocked(boolean isBlocked);

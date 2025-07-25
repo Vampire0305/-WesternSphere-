@@ -11,19 +11,19 @@ import java.util.Set;
 @Builder
 public class JobPostDTO {
 
-    private Long id;
-    private String title;
-    private String jobDescription;
-    private String location;
-    private String employmentType;
-    private Integer minExperience;
-    private Integer maxExperience;
-    private Double minSalary;
-    private Double maxSalary;
-    private Boolean isActive;
-    private Long recruiterId;
-    private String recruiterName; // optional, just for view
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private Set<Long> applicantIds; // or List<StudentSummaryDTO> if needed
+    public Long id;
+    public String title;
+    public String jobDescription;
+    public String location;
+    public String employmentType;
+    public Integer minExperience;
+    public Integer maxExperience;
+    public Double minSalary;
+    public Double maxSalary;
+    public Boolean isActive;
+    public Long recruiterId;
+    public String recruiterName; // optional, just for view
+    public LocalDateTime createdAt;
+    public LocalDateTime updatedAt;
+    public Set<Long> applicantIds; // or List<StudentSummaryDTO> if needed
 }

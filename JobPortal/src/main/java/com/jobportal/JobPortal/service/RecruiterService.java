@@ -5,16 +5,25 @@ import com.jobportal.JobPortal.entity.Recruiter;
 import com.jobportal.JobPortal.entity.User;
 import com.jobportal.JobPortal.exception.ValidationException;
 import com.jobportal.JobPortal.repository.RecruiterRepository;
+import com.jobportal.JobPortal.security.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -24,6 +33,9 @@ import java.util.Optional;
 public class RecruiterService {
 
     private final RecruiterRepository recruiterRepository;
+
+    @Autowired
+    private JWTUtil jwtUtil;
 
     public RecruiterDTO createRecruiter(RecruiterDTO dto) {
         log.info("Creating new recruiter with email: {}", dto.getEmail());
@@ -185,4 +197,42 @@ public class RecruiterService {
                 .updatedAt(recruiter.getUpdatedAt())
                 .build();
     }
+
+    public boolean checkPayStat(String token) {
+        String status=jwtUtil.extractPayStat(token);
+        if (status=="PAID") return true;
+        return false;
+    }
+    @Autowired
+    private RestTemplate restTemplate;
+
+    // This URL points to your BillingController in the Billing/Job microservice
+    private final String BILLING_SERVICE_URL = "http://billingService/api/invoice";
+
+    public String initiatePayment(Long recruiterId, Double amount) {
+        // Headers are important for POST requests to specify content type
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // This DTO encapsulates the necessary data for the payment
+        // You would create a proper DTO for this. For simplicity, we'll use a map.
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("recruiterId", recruiterId);
+        requestBody.put("amount", amount);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                BILLING_SERVICE_URL + "/create-order",
+                request,
+                String.class
+        );
+
+        if (response.getStatusCode().is2xxSuccessful()) {
+            return response.getBody();
+        } else {
+            throw new RuntimeException("Billing service responded with an error.");
+        }
+    }
+
 }
