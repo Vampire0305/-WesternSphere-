@@ -20,7 +20,7 @@ src/main/java/com/jobportal/JobPortal/security/CloudinaryConfig.java
 *.iml
 *.ipr
 *.zip
-
+*.properties
 
 ### NetBeans ###
 /nbproject/private/
