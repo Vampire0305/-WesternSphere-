@@ -1,7 +1,7 @@
 Overview
-InternSphere is a powerful developer toolset designed to facilitate the development and management of microservices-based applications. It offers a suite of features for secure authentication, media handling, version control, and automated billing workflows.
+WesternShpere is a powerful developer toolset designed to facilitate the development and management of microservices-based applications. It offers a suite of features for secure authentication, media handling, version control, and automated billing workflows.
 
-Why InternSphere?
+Why WesternShpere?
 This project aims to streamline complex application architectures by providing essential tools for microservices orchestration, security, and operational automation. The core features include:
 
 Microservices Architecture: Built-in service discovery with Eureka to enable scalable, resilient communication between components.
